@@ -10,4 +10,5 @@ build
 test*
 gym_icegame.egg-info
 dist
+*log*
 

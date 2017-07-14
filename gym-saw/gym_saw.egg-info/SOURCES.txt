@@ -1,9 +1,0 @@
-setup.py
-gym_saw/__init__.py
-gym_saw.egg-info/PKG-INFO
-gym_saw.egg-info/SOURCES.txt
-gym_saw.egg-info/dependency_links.txt
-gym_saw.egg-info/requires.txt
-gym_saw.egg-info/top_level.txt
-gym_saw/envs/__init__.py
-gym_saw/envs/saw_canvas.py
