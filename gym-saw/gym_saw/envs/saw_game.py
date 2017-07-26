@@ -56,7 +56,7 @@ class SAWGameEnv(core.Env):
 
     def start(self, init_site=None):
         if (init_site == None):
-            init_site = (0,0)
+            init_site = (rnum(self.L), rnum(self.L))
         self.start_agent(init_site)
 
     def start_agent(self, init_site):
