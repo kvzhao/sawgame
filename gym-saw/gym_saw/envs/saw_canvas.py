@@ -21,11 +21,15 @@ class SAWCanvasEnv(core.Env):
 
         self.agent_site = (0, 0)
 
+        ## enlarge action space to 7 operations
         self.name_mapping = dict({
                                   0 :   'right',
                                   1 :   'down',
                                   2 :   'left',
                                   3 :   'up',
+                                  4 :   'lower_next',
+                                  5 :   'upper_next',
+                                  6 :   'stop',
                                   })
 
         self.index_mapping = dict({
@@ -33,6 +37,9 @@ class SAWCanvasEnv(core.Env):
                                   'down' : 1,
                                   'left' : 2,
                                   'up' : 3,
+                                  'lower_next' : 4,
+                                  'upper_next' : 5,
+                                  'stop' : 6,
                                   })
 
         ### action space and state space
@@ -70,7 +77,7 @@ class SAWCanvasEnv(core.Env):
     
     def complete_check(self):
         done = False
-        coverage_ration = 0.75
+        coverage_ration = 0.6
         if (np.sum(self.canvas) >= coverage_ration * self.N):
             done = True
         return done
@@ -78,21 +85,42 @@ class SAWCanvasEnv(core.Env):
     def step(self, action):
         terminate = False
         intersect = False
+        stop_called = False
         reward = self.stepwise_reward
         rets = []
 
-        if (0<= action < 4):
+        if (0<= action < 6):
             intersect = self.walk(action)
+        elif (action == 6):
+            stop_called = True
+            '''
+                In order to mimic icegame, we expect action 6 working like a 'stop' button.
+                When 'stop' is called, episode terminate and avoid suffering from colliding damage.
+            '''
         
         if (intersect):
             terminate = True
             reward = self.failure_penalty
+            print ('Collide.')
             if (self.max_depth < self.step_counter):
                 self.max_depth = self.step_counter
                 print ('Penetration depth = {}'.format(self.step_counter))
                 ## TODO: Write to Json
                 print (self.traj_sites)
                 with open(self.ofilename, 'a') as f:
+                    f.write('Collide\n')
+                    f.write('{}\n'.format(self.traj_sites))
+                self.render()
+        elif (stop_called):
+            terminate = True
+            reward = -.2 ## minor penalty
+            print ('Call Stop.')
+            if (self.max_depth < self.step_counter):
+                self.max_depth = self.step_counter
+                print ('Penetration depth = {}'.format(self.step_counter))
+                print (self.traj_sites)
+                with open(self.ofilename, 'a') as f:
+                    f.write('Call Stop\n')
                     f.write('{}\n'.format(self.traj_sites))
                 self.render()
 
@@ -124,6 +152,16 @@ class SAWCanvasEnv(core.Env):
             self.agent_site = (xp, y)
         elif (dir == 3):
             self.agent_site = (xm, y)
+        elif (dir == 4):
+            if((x+y) % 2 == 0):
+                self.agent_site = (xp, yp)
+            else:
+                self.agent_site = (xm, yp)
+        elif (dir == 5):
+            if((x+y) % 2 == 0):
+                self.agent_site = (xm, ym)
+            else:
+                self.agent_site = (xp, ym)
         
         self.traj_sites.append(self.agent_site)
         self.traj_actions.append(dir)
@@ -160,9 +198,10 @@ class SAWCanvasEnv(core.Env):
         screen += '\t+' + self.L * '---' + '+\n'
         sys.stdout.write(screen)
     
+    # stack 4 copy of canvas
     def get_obs(self):
-        #return self.canvas
-        return self.canvas.reshape(self.L, self.L, 1)
+        x_t = self.canvas.reshape(self.L, self.L, 1)
+        return np.stack((x_t, x_t, x_t, x_t), axis = 2)
 
     @property
     def unwrapped(self):
