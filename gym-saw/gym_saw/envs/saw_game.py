@@ -181,6 +181,9 @@ class SAWGameEnv(core.Env):
     def _pdb(self, s, d, l):
         return ((s+d) % l + l ) % l
 
+    def timeout(self):
+        return False
+
     def render(self, mode='ansi', close=False):
         screen = '\r'
         screen += '\n\t'
@@ -200,7 +203,7 @@ class SAWGameEnv(core.Env):
 
     # stack 4 copy of canvas
     def get_obs(self):
-        x_t = self.canvas.reshape(self.L, self.L, 1)
+        x_t = self.canvas.reshape(self.L, self.L)
         return np.stack((x_t, x_t, x_t, x_t), axis = 2)
 
     @property
