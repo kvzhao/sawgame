@@ -100,14 +100,12 @@ class SAWGameEnv(core.Env):
         if (intersect):
             terminate = True
             reward = self.failure_penalty
-            print ('Collide.')
             if (self.max_depth < self.step_counter):
                 self.max_depth = self.step_counter
                 print ('Penetration depth = {}'.format(self.step_counter))
                 ## TODO: Write to Json
                 print (self.traj_sites)
                 with open(self.ofilename, 'a') as f:
-                    f.write('Collide\n')
                     f.write('{}\n'.format(self.traj_sites))
                 self.render()
 
