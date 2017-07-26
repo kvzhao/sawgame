@@ -29,7 +29,7 @@ class SAWGameEnv(core.Env):
                                   3 :   'up',
                                   4 :   'lower_next',
                                   5 :   'upper_next',
-                                  6 :   'stop',
+                                  6 :   'noop',
                                   })
 
         self.index_mapping = dict({
@@ -39,7 +39,7 @@ class SAWGameEnv(core.Env):
                                   'up' : 3,
                                   'lower_next' : 4,
                                   'upper_next' : 5,
-                                  'stop' : 6,
+                                  'noop' : 6,
                                   })
 
         ### action space and state space
@@ -85,14 +85,13 @@ class SAWGameEnv(core.Env):
     def step(self, action):
         terminate = False
         intersect = False
-        stop_called = False
         reward = self.stepwise_reward
         rets = []
 
         if (0<= action < 6):
             intersect = self.walk(action)
         elif (action == 6):
-            stop_called = True
+            pass
             '''
                 In order to mimic icegame, we expect action 6 working like a 'stop' button.
                 When 'stop' is called, episode terminate and avoid suffering from colliding damage.
@@ -109,18 +108,6 @@ class SAWGameEnv(core.Env):
                 print (self.traj_sites)
                 with open(self.ofilename, 'a') as f:
                     f.write('Collide\n')
-                    f.write('{}\n'.format(self.traj_sites))
-                self.render()
-        elif (stop_called):
-            terminate = True
-            reward = -.2 ## minor penalty
-            print ('Call Stop.')
-            if (self.max_depth < self.step_counter):
-                self.max_depth = self.step_counter
-                print ('Penetration depth = {}'.format(self.step_counter))
-                print (self.traj_sites)
-                with open(self.ofilename, 'a') as f:
-                    f.write('Call Stop\n')
                     f.write('{}\n'.format(self.traj_sites))
                 self.render()
 
