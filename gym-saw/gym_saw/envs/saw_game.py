@@ -8,7 +8,7 @@ import sys
 
 rnum = np.random.randint
 
-class SAWCanvasEnv(core.Env):
+class SAWGameEnv(core.Env):
     def __init__(self, L):
         self.L = L
         self.N = self.L ** 2
@@ -53,17 +53,17 @@ class SAWCanvasEnv(core.Env):
         self.max_depth = 0
 
         self.ofilename = 'walking.log'
-    
+
     def start(self, init_site=None):
         if (init_site == None):
             init_site = (0,0)
         self.start_agent(init_site)
-    
+
     def start_agent(self, init_site):
         self.agent_site = init_site
         self._flip_agent_site()
         self.site_counter[self.agent_site] += 1
-    
+
     def reset(self):
         self.canvas = -np.ones((self.L, self.L), dtype=np.float32)
         self.site_counter = np.zeros((self.L, self.L), dtype=np.int32)
@@ -74,14 +74,14 @@ class SAWCanvasEnv(core.Env):
         self.start_agent((rnum(self.L), rnum(self.L)))
 
         return self.get_obs()
-    
+
     def complete_check(self):
         done = False
         coverage_ration = 0.6
         if (np.sum(self.canvas) >= coverage_ration * self.N):
             done = True
         return done
-    
+
     def step(self, action):
         terminate = False
         intersect = False
@@ -97,7 +97,7 @@ class SAWCanvasEnv(core.Env):
                 In order to mimic icegame, we expect action 6 working like a 'stop' button.
                 When 'stop' is called, episode terminate and avoid suffering from colliding damage.
             '''
-        
+
         if (intersect):
             terminate = True
             reward = self.failure_penalty
@@ -132,7 +132,7 @@ class SAWCanvasEnv(core.Env):
 
         obs = self.get_obs()
         return obs, reward, terminate, rets
-    
+
     def walk(self, dir):
         collide = False
         x, y = self.agent_site
@@ -140,7 +140,7 @@ class SAWCanvasEnv(core.Env):
         xm = x - 1 if x > 0        else x
         yp = y + 1 if y < self.L-1 else y
         ym = y - 1 if y > 0        else y
-        
+
         if (type(dir) == str):
             dir = self.index_mapping[dir]
 
@@ -162,16 +162,16 @@ class SAWCanvasEnv(core.Env):
                 self.agent_site = (xm, ym)
             else:
                 self.agent_site = (xp, ym)
-        
+
         self.traj_sites.append(self.agent_site)
         self.traj_actions.append(dir)
         self.step_counter += 1
-        
+
         collide = self._flip_agent_site()
         return collide
 
     def _flip_agent_site(self):
-        visited = False 
+        visited = False
         if (self.site_counter[self.agent_site] >= 1):
             visited = True
         self.canvas[self.agent_site] *= -1
@@ -197,7 +197,7 @@ class SAWCanvasEnv(core.Env):
             screen += '|\n'
         screen += '\t+' + self.L * '---' + '+\n'
         sys.stdout.write(screen)
-    
+
     # stack 4 copy of canvas
     def get_obs(self):
         x_t = self.canvas.reshape(self.L, self.L, 1)

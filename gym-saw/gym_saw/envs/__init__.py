@@ -1,1 +1,1 @@
-from gym_saw.envs.saw_canvas import SAWCanvasEnv
+from gym_saw.envs.saw_game import SAWGameEnv
