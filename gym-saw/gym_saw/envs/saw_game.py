@@ -91,7 +91,8 @@ class SAWGameEnv(core.Env):
         if (0<= action < 6):
             intersect = self.walk(action)
         elif (action == 6):
-            reward = 0.005
+            reward = self.failure_penalty + self.stepwise_reward
+            terminate = True
             '''
                 In order to mimic icegame, we expect action 6 working like a 'stop' button.
                 When 'stop' is called, episode terminate and avoid suffering from colliding damage.
